@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DrishtiMitra - AI Based Assistive Navigation System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="parent">
+        <div class="panel div2">
+            <div class="panel-header">SYSTEM STATUS</div>
+            <div class="panel-content">
+                <div class="status-item">Camera: <span class="text-green">Active</span></div>
+                <div class="status-item">Model: YOLOv8 & MediaPipe</div>
+                <div class="status-item" id="fps-counter">FPS: --</div>
+                <div class="status-item" id="obj-counter">Objects Detected: --</div>
+                <div class="status-item">Audio Engine: <span class="text-green">Active</span></div>
+            </div>
+        </div>
+
+        <div class="panel div9 title-panel">
+            <h1>DrishtiMitra - AI Based Assistive Navigation System</h1>
+        </div>
+
+        <div class="panel div3">
+            <div class="panel-header">3D GLASSES MODEL</div>
+            <div class="panel-content no-scroll" style="display: flex; justify-content: center; align-items: center; background-color: transparent;">
+                <img src="glasses.png" alt="AR Glasses" style="max-width: 90%; max-height: 90%; object-fit: contain;">
+            </div>
+        </div>
+
+        <div class="panel div5">
+            <div class="panel-header">DEVICE SETTINGS</div>
+            <div class="panel-content settings-content">
+                <div class="setting-row">
+                    <label>Camera:</label>
+                    <div class="select-wrapper">
+                        <select id="camera-select">
+                            <option value="0">Camera 0</option>
+                            <option value="1" selected>Camera 1</option>
+                            <option value="2">Camera 2</option>
+                            <option value="3">Camera 3</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="setting-row">
+                    <label>Microphone:</label>
+                    <div class="select-wrapper">
+                        <select id="mic-select"><option>Loading...</option></select>
+                    </div>
+                </div>
+                <div class="setting-row">
+                    <label>Speaker:</label>
+                    <div class="select-wrapper">
+                        <select id="speaker-select"><option>Loading...</option></select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel div10 camera-feed-panel">
+            <div class="panel-header">CAMERA FEED</div>
+            <div class="panel-content">
+                <div class="camera-screen" style="position: relative; overflow: hidden; padding: 0;">
+                    <img id="video-stream" src="/video_feed" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1;">
+                    <div class="grid-overlay" style="z-index: 2;">
+                        <div class="grid-section"></div>
+                        <div class="grid-section"></div>
+                        <div class="grid-section no-border"></div>
+                    </div>
+                    <div class="camera-labels" style="z-index: 2;">
+                        <div class="label-section">LEFT</div>
+                        <div class="label-section">CENTRE</div>
+                        <div class="label-section">RIGHT</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel div4">
+            <div class="panel-header">HAPTIC MOTOR VISUALIZER</div>
+            <div class="panel-content haptic-content">
+                <div class="haptic-wrapper">
+                    <div class="haptic-box">
+                        <div class="motor motor-tl"></div>
+                        <div class="motor motor-bl"></div>
+                        <div class="motor motor-tr"></div>
+                        <div class="motor motor-br"></div>
+                    </div>
+                    <div class="haptic-label hl-tl">L_UP</div>
+                    <div class="haptic-label hl-bl">L_DOWN</div>
+                    <div class="haptic-label hl-tr">R_UP</div>
+                    <div class="haptic-label hl-br">R_DOWN</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel div6">
+            <div class="panel-header">DETECTION OUTPUT</div>
+            <div class="panel-content monospace-list">
+                <p>Cup - Right</p>
+                <p>Bottle - Left</p>
+                <p>Chair - Center</p>
+            </div>
+        </div>
+
+        <div class="panel div8 terminal-panel">
+            <div class="panel-header">COMMAND TERMINAL</div>
+            <div class="panel-content terminal-content">
+                <div class="terminal-text">
+                    <p>&gt; start</p>
+                    <p>System Initialized.</p>
+                </div>
+                <div class="quick-commands">
+                    <button class="quick-cmd">describe surroundings</button>
+                    <button class="quick-cmd">where is...</button>
+                    <button class="quick-cmd">what is in my hand</button>
+                    <button class="quick-cmd">help me find...</button>
+                </div>
+                <div class="terminal-input-row">
+                    <button class="voice-btn" id="voice-btn" title="Voice Input (Wake word: vision)">🎤</button>
+                    <input type="text" placeholder="Type command..." class="term-input">
+                    <button class="term-btn">Run</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel div7">
+            <div class="panel-header">INFERENCE OUTPUT</div>
+            <div class="panel-content text-list">
+                <p>Chair on the left</p>
+                <p>Bottle on table ahead</p>
+                <p>Laptop on table in center</p>
+                <p>Person standing near door</p>
+            </div>
+        </div>
+    </div>
+    <script>
+        async function fetchStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+                
+                document.getElementById('fps-counter').innerText = `FPS: ${data.fps || 0}`;
+                document.getElementById('obj-counter').innerText = `Objects Detected: ${data.object_count || 0}`;
+
+                const motors = ['motor-tl', 'motor-bl', 'motor-tr', 'motor-br'];
+                
+                if (data.guidance_reached && !window.lastGuidanceReached) {
+                    window.isBlinking = true;
+                    motors.forEach(m => {
+                        const el = document.querySelector(`.${m}`);
+                        if (el) {
+                            el.classList.add('active', 'blink');
+                        }
+                    });
+                    
+                    setTimeout(() => {
+                        window.isBlinking = false;
+                        motors.forEach(m => {
+                            const el = document.querySelector(`.${m}`);
+                            if (el) el.classList.remove('active', 'blink');
+                        });
+                    }, 1000);
+                }
+                window.lastGuidanceReached = data.guidance_reached;
+
+                if (!window.isBlinking) {
+                    motors.forEach(m => {
+                        const el = document.querySelector(`.${m}`);
+                        if (el) {
+                            el.classList.remove('blink');
+                            if (data.haptic_motors && data.haptic_motors.includes(m)) {
+                                el.classList.add('active');
+                            } else {
+                                el.classList.remove('active');
+                            }
+                        }
+                    });
+                }
+
+                const detectionPanel = document.querySelector('.div6 .panel-content');
+                if (data.objects && data.objects.length > 0) {
+                    detectionPanel.innerHTML = data.objects.map(obj => `<p>${obj}</p>`).join('');
+                } else {
+                    detectionPanel.innerHTML = '<p>Scanning...</p>';
+                }
+
+                const inferencePanel = document.querySelector('.div7 .panel-content');
+                if (data.scene_descriptions && data.scene_descriptions.length > 0) {
+                    inferencePanel.innerHTML = data.scene_descriptions.map(desc => `<p>${desc}</p>`).join('');
+                } else {
+                    inferencePanel.innerHTML = '<p>Analyzing scene...</p>';
+                }
+
+                if (data.terminal_messages && data.terminal_messages.length > 0) {
+                    const terminalText = document.querySelector('.terminal-text');
+                    data.terminal_messages.forEach(msg => {
+                        const newMsg = document.createElement('p');
+                        newMsg.innerText = msg;
+                        terminalText.appendChild(newMsg);
+                    });
+                    terminalText.scrollTop = terminalText.scrollHeight;
+                    fetch('/api/clear_messages', { method: 'POST' });
+                }
+
+                const voiceBtn = document.getElementById('voice-btn');
+                if (data.is_recording) {
+                    voiceBtn.classList.add('recording');
+                } else {
+                    voiceBtn.classList.remove('recording');
+                }
+            } catch (err) {
+                console.error("Error fetching AI status:", err);
+            }
+        }
+
+        setInterval(fetchStatus, 500);
+
+        const termInput = document.querySelector('.term-input');
+        const termBtn = document.querySelector('.term-btn');
+
+        async function sendCommand() {
+            const cmd = termInput.value.trim();
+            if (!cmd) return;
+            
+            termInput.value = '';
+            
+            try {
+                await fetch('/api/command', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ command: cmd })
+                });
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        termBtn.addEventListener('click', sendCommand);
+        termInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendCommand();
+        });
+
+        document.querySelectorAll('.quick-cmd').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const cmd = btn.innerText;
+                if (cmd.endsWith('...')) {
+                    termInput.value = cmd.replace('...', ' ');
+                    termInput.focus();
+                } else {
+                    termInput.value = cmd;
+                    sendCommand();
+                }
+            });
+        });
+
+        const voiceBtn = document.getElementById('voice-btn');
+        voiceBtn.addEventListener('click', async () => {
+            await fetch('/api/start_voice', { method: 'POST' });
+        });
+
+        async function populateDevices() {
+            try {
+                const res = await fetch('/api/devices');
+                const data = await res.json();
+                
+                const micSelect = document.getElementById('mic-select');
+                const spkSelect = document.getElementById('speaker-select');
+                
+                micSelect.innerHTML = '';
+                spkSelect.innerHTML = '';
+                
+                if (data.mics) {
+                    data.mics.forEach(device => {
+                        const opt = document.createElement('option');
+                        opt.value = device.id;
+                        opt.text = device.name;
+                        micSelect.appendChild(opt);
+                    });
+                }
+                
+                if (data.speakers) {
+                    data.speakers.forEach(device => {
+                        const opt = document.createElement('option');
+                        opt.value = device.id;
+                        opt.text = device.name;
+                        spkSelect.appendChild(opt);
+                    });
+                }
+            } catch (err) {
+                console.error("Device enumeration failed", err);
+            }
+        }
+        populateDevices();
+
+        document.getElementById('camera-select').addEventListener('change', async (e) => {
+            await fetch('/api/camera', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ index: parseInt(e.target.value) })
+            });
+            setTimeout(() => {
+                const img = document.querySelector('.camera-screen img');
+                if (img) img.src = `/video_feed?t=${new Date().getTime()}`;
+            }, 1000);
+        });
+
+        document.getElementById('mic-select').addEventListener('change', async (e) => {
+            await fetch('/api/set_device', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ mic_index: e.target.value })
+            });
+        });
+
+        document.getElementById('speaker-select').addEventListener('change', async (e) => {
+            await fetch('/api/set_device', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ speaker_index: e.target.value })
+            });
+        });
+
+    </script>
+</body>
+</html>

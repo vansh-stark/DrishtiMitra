@@ -1,0 +1,74 @@
+names:
+  0: Alarm clock
+  1: Backpack
+  2: Ball
+  3: Bed
+  4: Bench
+  5: Bicycle
+  6: Book
+  7: Bottle
+  8: Box
+  9: Briefcase
+  10: Bus
+  11: Car
+  12: Ceiling fan
+  13: Chair
+  14: Clock
+  15: Closet
+  16: Clothing
+  17: Computer keyboard
+  18: Computer monitor
+  19: Computer mouse
+  20: Couch
+  21: Desk
+  22: Digital clock
+  23: Door
+  24: Drawer
+  25: Drink
+  26: Food
+  27: Furniture
+  28: Handbag
+  29: Home appliance
+  30: Humidifier
+  31: Kitchen appliance
+  32: Kitchen knife
+  33: Kitchen utensil
+  34: Ladder
+  35: Lamp
+  36: Laptop
+  37: Light switch
+  38: Luggage and bags
+  39: Mobile phone
+  40: Motorcycle
+  41: Mouse
+  42: Pen
+  43: Person
+  44: Plant
+  45: Refrigerator
+  46: Remote control
+  47: Shelf
+  48: Sofa bed
+  49: Stairs
+  50: Stool
+  51: Stop sign
+  52: Suitcase
+  53: Swimming pool
+  54: Table
+  55: Tablet computer
+  56: Taxi
+  57: Telephone
+  58: Television
+  59: Toilet
+  60: Tool
+  61: Train
+  62: Vehicle
+  63: Wall clock
+  64: Wardrobe
+  65: Washing machine
+  66: Watch
+  67: Wheelchair
+  68: Fruit
+  69: Animal
+path: .
+train: .\images\train\
+val: .\images\train\

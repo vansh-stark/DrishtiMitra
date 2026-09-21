@@ -1,0 +1,14 @@
+opencv-python
+torch
+torchvision
+pyttsx3
+pywin32
+numpy
+mediapipe
+PyAudio
+SpeechRecognition
+ultralytics
+Flask
+roboflow
+fiftyone
+timm

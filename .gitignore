@@ -1,0 +1,48 @@
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+.venv/
+venv/
+backend/venv/
+
+# =========================
+# Datasets
+# =========================
+backend/custom_dataset/images/
+backend/custom_dataset/labels/
+backend/custom_dataset/*.cache
+
+# =========================
+# YOLO / Ultralytics
+# =========================
+backend/runs/
+
+# =========================
+# IDE
+# =========================
+.vscode/
+.idea/
+
+# =========================
+# OS
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Logs / temporary files
+# =========================
+*.log
+*.tmp
+
+# =========================
+# Python build artifacts
+# =========================
+build/
+dist/
+*.egg-info/
